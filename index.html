@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube風プレイヤー</title>
+
+<style>
+body{
+  margin:0;
+  background:#0f0f0f;
+  color:white;
+  font-family:Arial,sans-serif;
+}
+header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:#0f0f0f;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  padding:10px 16px;
+  border-bottom:1px solid #222;
+}
+.logo{
+  font-size:22px;
+  font-weight:bold;
+  color:white;
+}
+.logo span{color:red}
+.searchBox{
+  flex:1;
+  display:flex;
+  justify-content:center;
+}
+.searchBox input{
+  width:70%;
+  max-width:600px;
+  padding:12px;
+  border-radius:20px 0 0 20px;
+  border:1px solid #333;
+  background:#121212;
+  color:white;
+  font-size:16px;
+}
+.searchBox button{
+  padding:12px 20px;
+  border-radius:0 20px 20px 0;
+  border:1px solid #333;
+  background:#222;
+  color:white;
+  cursor:pointer;
+}
+.layout{
+  display:flex;
+}
+.sidebar{
+  width:210px;
+  padding:15px;
+  border-right:1px solid #222;
+}
+.sidebar button{
+  display:block;
+  width:100%;
+  margin-bottom:10px;
+  padding:12px;
+  background:#222;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  text-align:left;
+}
+.sidebar button:hover{
+  background:#333;
+}
+.main{
+  flex:1;
+}
+.playerArea{
+  padding:20px;
+  display:none;
+}
+.playerArea.active{
+  display:block;
+}
+iframe{
+  width:100%;
+  max-width:950px;
+  height:520px;
+  border:0;
+  border-radius:14px;
+  background:black;
+}
+#nowTitle{
+  max-width:950px;
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+}
+.sectionTitle{
+  margin:20px;
+}
+.videoGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:18px;
+  padding:20px;
+}
+.card{
+  cursor:pointer;
+}
+.card img{
+  width:100%;
+  border-radius:12px;
+  background:#222;
+}
+.cardTitle{
+  margin-top:8px;
+  font-size:14px;
+  line-height:1.4;
+}
+.badge{
+  display:inline-block;
+  margin-top:6px;
+  padding:3px 7px;
+  background:red;
+  border-radius:8px;
+  font-size:12px;
+}
+.historyBox{
+  padding:20px;
+  display:none;
+}
+.historyBox.active{
+  display:block;
+}
+.historyItem{
+  background:#1f1f1f;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+}
+.shortsView{
+  display:none;
+  height:calc(100vh - 60px);
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+}
+.shortsView.active{
+  display:block;
+}
+.shortItem{
+  height:calc(100vh - 60px);
+  scroll-snap-align:start;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.shortBox{
+  width:340px;
+  height:600px;
+  max-width:95vw;
+  max-height:85vh;
+  background:black;
+  border-radius:20px;
+  overflow:hidden;
+}
+.shortBox iframe{
+  width:100%;
+  height:100%;
+  border-radius:20px;
+}
+@media(max-width:800px){
+  .sidebar{display:none}
+  header{flex-wrap:wrap}
+  .searchBox{width:100%}
+  .searchBox input{width:75%}
+  iframe{height:260px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo"><span>▶</span> MyTube</div>
+  <div class="searchBox">
+    <input id="searchInput" placeholder="検索">
+    <button onclick="searchVideos()">検索</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <button onclick="showHome()">ホーム</button>
+    <button onclick="showShorts()">Shorts</button>
+    <button onclick="showHistory()">検索履歴</button>
+    <button onclick="clearHistory()">履歴削除</button>
+  </nav>
+
+  <main class="main">
+    <section id="playerArea" class="playerArea">
+      <div id="playerBox"></div>
+      <div id="nowTitle"></div>
+    </section>
+
+    <h2 id="sectionTitle" class="sectionTitle">おすすめ動画</h2>
+    <section id="videoGrid" class="videoGrid"></section>
+
+    <section id="historyBox" class="historyBox"></section>
+
+    <section id="shortsView" class="shortsView"></section>
+  </main>
+</div>
+
+<script>
+const API_KEY = "AIzaSyBf5AkiXVgmQQwiP9HlfG3MzvUgIlR2vYI";
+
+let videos = [];
+let shorts = [];
+
+window.onload = () => {
+  loadRecommended();
+};
+
+function getHistory(){
+  return JSON.parse(localStorage.getItem("searchHistory") || "[]");
+}
+
+function saveSearch(word){
+  let history = getHistory();
+  history = history.filter(x => x !== word);
+  history.unshift(word);
+  history = history.slice(0,10);
+  localStorage.setItem("searchHistory", JSON.stringify(history));
+}
+
+function getWatchData(){
+  return JSON.parse(localStorage.getItem("watchData") || "[]");
+}
+
+function saveWatch(title){
+  let data = getWatchData();
+  data.unshift(title);
+  data = data.slice(0,20);
+  localStorage.setItem("watchData", JSON.stringify(data));
+}
+
+function makeRecommendWord(){
+  const watched = getWatchData().join(" ");
+  const history = getHistory().join(" ");
+
+  if(watched || history){
+    return watched + " " + history;
+  }
+
+  return "人気 動画 音楽 ゲーム shorts";
+}
+
+function hideAll(){
+  document.getElementById("videoGrid").style.display = "none";
+  document.getElementById("historyBox").classList.remove("active");
+  document.getElementById("shortsView").classList.remove("active");
+}
+
+function showHome(){
+  hideAll();
+  document.getElementById("videoGrid").style.display = "grid";
+  document.getElementById("sectionTitle").style.display = "block";
+  loadRecommended();
+}
+
+function loadRecommended(){
+  document.getElementById("sectionTitle").textContent = "あなたへのおすすめ";
+  fetchVideos(makeRecommendWord());
+}
+
+async function searchVideos(){
+  const q = document.getElementById("searchInput").value.trim();
+  if(!q){
+    alert("検索ワードを入力してね");
+    return;
+  }
+
+  saveSearch(q);
+  hideAll();
+  document.getElementById("videoGrid").style.display = "grid";
+  document.getElementById("sectionTitle").style.display = "block";
+  document.getElementById("sectionTitle").textContent = "検索結果：" + q;
+
+  fetchVideos(q + " shorts");
+}
+
+async function fetchVideos(query){
+  const grid = document.getElementById("videoGrid");
+  grid.innerHTML = "<p>読み込み中...</p>";
+
+  const url =
+    "https://www.googleapis.com/youtube/v3/search" +
+    "?part=snippet" +
+    "&type=video" +
+    "&videoEmbeddable=true" +
+    "&safeSearch=moderate" +
+    "&maxResults=30" +
+    "&q=" + encodeURIComponent(query) +
+    "&key=" + API_KEY;
+
+  try{
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(data.error){
+      grid.innerHTML = "<p>APIエラー：" + data.error.message + "</p>";
+      return;
+    }
+
+    videos = [];
+    shorts = [];
+    grid.innerHTML = "";
+
+    data.items.forEach(item => {
+      const videoId = item.id.videoId;
+      const title = item.snippet.title;
+      const thumb =
+        item.snippet.thumbnails.high?.url ||
+        item.snippet.thumbnails.medium?.url ||
+        item.snippet.thumbnails.default.url;
+
+      const isShort =
+        title.toLowerCase().includes("shorts") ||
+        title.includes("ショート") ||
+        title.includes("#shorts");
+
+      const video = {videoId,title,thumb,isShort};
+      videos.push(video);
+
+      if(isShort) shorts.push(video);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${thumb}">
+        <div class="cardTitle">${title}</div>
+        ${isShort ? '<span class="badge">Shorts</span>' : ''}
+      `;
+
+      card.onclick = () => playVideo(video);
+
+      grid.appendChild(card);
+    });
+
+    if(shorts.length === 0){
+      shorts = videos;
+    }
+
+  }catch(e){
+    grid.innerHTML = "<p>読み込みに失敗しました</p>";
+  }
+}
+
+function playVideo(video){
+  saveWatch(video.title);
+
+  document.getElementById("playerArea").classList.add("active");
+  document.getElementById("playerBox").innerHTML = `
+    <iframe
+      src="https://www.youtube.com/embed/${video.videoId}?rel=0&autoplay=1&playsinline=1"
+      title="YouTube video player"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen>
+    </iframe>
+  `;
+
+  document.getElementById("nowTitle").textContent = video.title;
+
+  window.scrollTo({top:0,behavior:"smooth"});
+
+  setTimeout(() => {
+    loadRecommended();
+  }, 1500);
+}
+
+function showHistory(){
+  hideAll();
+  document.getElementById("sectionTitle").style.display = "none";
+
+  const box = document.getElementById("historyBox");
+  box.classList.add("active");
+
+  const history = getHistory();
+
+  if(history.length === 0){
+    box.innerHTML = "<h2>検索履歴はまだありません</h2>";
+    return;
+  }
+
+  box.innerHTML = "<h2>検索履歴</h2>";
+
+  history.forEach(word => {
+    const div = document.createElement("div");
+    div.className = "historyItem";
+    div.textContent = word;
+    div.onclick = () => {
+      document.getElementById("searchInput").value = word;
+      searchVideos();
+    };
+    box.appendChild(div);
+  });
+}
+
+function clearHistory(){
+  localStorage.removeItem("searchHistory");
+  localStorage.removeItem("watchData");
+  alert("履歴を削除しました");
+  showHome();
+}
+
+function showShorts(){
+  hideAll();
+  document.getElementById("sectionTitle").style.display = "none";
+
+  const shortsView = document.getElementById("shortsView");
+  shortsView.classList.add("active");
+  shortsView.innerHTML = "";
+
+  if(shorts.length === 0){
+    fetchVideos("shorts 人気").then(() => showShorts());
+    return;
+  }
+
+  shorts.forEach(video => {
+    const item = document.createElement("div");
+    item.className = "shortItem";
+
+    item.innerHTML = `
+      <div class="shortBox">
+        <iframe
+          src="https://www.youtube.com/embed/${video.videoId}?rel=0&playsinline=1"
+          title="YouTube Shorts player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen>
+        </iframe>
+      </div>
+    `;
+
+    shortsView.appendChild(item);
+  });
+}
+
+document.getElementById("searchInput").addEventListener("keydown", e => {
+  if(e.key === "Enter") searchVideos();
+});
+</script>
+
+</body>
+</html>
