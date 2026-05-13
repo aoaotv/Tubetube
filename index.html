@@ -3,110 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube風プレイヤー</title>
-
+<title>Mytube</title>
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
   background:#0f0f0f;
   color:white;
   font-family:Arial,sans-serif;
+  padding-bottom:70px;
 }
 header{
   position:sticky;
   top:0;
   z-index:100;
   background:#0f0f0f;
-  display:flex;
-  align-items:center;
-  gap:15px;
-  padding:10px 16px;
+  padding:12px;
   border-bottom:1px solid #222;
 }
-.logo{
-  font-size:22px;
-  font-weight:bold;
-  color:white;
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
-.logo span{color:red}
+.logo{
+  font-size:24px;
+  font-weight:bold;
+  cursor:pointer;
+}
 .searchBox{
   flex:1;
   display:flex;
-  justify-content:center;
 }
 .searchBox input{
-  width:70%;
-  max-width:600px;
-  padding:12px;
-  border-radius:20px 0 0 20px;
+  flex:1;
+  padding:11px;
   border:1px solid #333;
   background:#121212;
   color:white;
-  font-size:16px;
+  border-radius:20px 0 0 20px;
+  font-size:15px;
 }
-.searchBox button{
-  padding:12px 20px;
-  border-radius:0 20px 20px 0;
-  border:1px solid #333;
-  background:#222;
-  color:white;
-  cursor:pointer;
-}
-.layout{
-  display:flex;
-}
-.sidebar{
-  width:210px;
-  padding:15px;
-  border-right:1px solid #222;
-}
-.sidebar button{
-  display:block;
-  width:100%;
-  margin-bottom:10px;
-  padding:12px;
-  background:#222;
-  color:white;
+.searchBox button,.recommendBtn{
+  padding:11px 16px;
   border:none;
-  border-radius:10px;
-  cursor:pointer;
-  text-align:left;
+  background:#2a2a2a;
+  color:white;
+  border-radius:0 20px 20px 0;
 }
-.sidebar button:hover{
-  background:#333;
-}
-.main{
-  flex:1;
+.recommendBtn{
+  display:block;
+  margin:12px auto 0;
+  border-radius:20px;
+  background:red;
 }
 .playerArea{
-  padding:20px;
   display:none;
+  padding:14px;
 }
-.playerArea.active{
-  display:block;
-}
+.playerArea.active{display:block}
 iframe{
   width:100%;
-  max-width:950px;
   height:520px;
   border:0;
   border-radius:14px;
   background:black;
 }
 #nowTitle{
-  max-width:950px;
-  font-size:20px;
+  font-size:18px;
   font-weight:bold;
   margin-top:10px;
 }
 .sectionTitle{
-  margin:20px;
+  margin:15px;
 }
-.videoGrid{
+.grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
   gap:18px;
-  padding:20px;
+  padding:15px;
 }
 .card{
   cursor:pointer;
@@ -121,39 +96,29 @@ iframe{
   font-size:14px;
   line-height:1.4;
 }
+.channelName{
+  color:#aaa;
+  font-size:13px;
+  margin-top:5px;
+}
+.channelName:hover{color:white}
 .badge{
   display:inline-block;
   margin-top:6px;
-  padding:3px 7px;
+  padding:4px 8px;
   background:red;
-  border-radius:8px;
-  font-size:12px;
-}
-.historyBox{
-  padding:20px;
-  display:none;
-}
-.historyBox.active{
-  display:block;
-}
-.historyItem{
-  background:#1f1f1f;
-  padding:12px;
   border-radius:10px;
-  margin-bottom:10px;
-  cursor:pointer;
+  font-size:12px;
 }
 .shortsView{
   display:none;
-  height:calc(100vh - 60px);
+  height:calc(100vh - 125px);
   overflow-y:scroll;
   scroll-snap-type:y mandatory;
 }
-.shortsView.active{
-  display:block;
-}
+.shortsView.active{display:block}
 .shortItem{
-  height:calc(100vh - 60px);
+  height:calc(100vh - 125px);
   scroll-snap-align:start;
   display:flex;
   justify-content:center;
@@ -163,58 +128,81 @@ iframe{
   width:340px;
   height:600px;
   max-width:95vw;
-  max-height:85vh;
-  background:black;
-  border-radius:20px;
+  max-height:82vh;
+  border-radius:22px;
   overflow:hidden;
+  background:black;
 }
 .shortBox iframe{
   width:100%;
   height:100%;
-  border-radius:20px;
+  border-radius:22px;
 }
-@media(max-width:800px){
-  .sidebar{display:none}
-  header{flex-wrap:wrap}
-  .searchBox{width:100%}
-  .searchBox input{width:75%}
-  iframe{height:260px}
+.historyBox{
+  display:none;
+  padding:18px;
+}
+.historyBox.active{display:block}
+.historyItem{
+  padding:13px;
+  background:#1f1f1f;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+.bottomNav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:64px;
+  background:#111;
+  border-top:1px solid #333;
+  display:flex;
+  justify-content:space-around;
+  z-index:999;
+}
+.bottomNav button{
+  flex:1;
+  background:none;
+  border:none;
+  color:white;
+  font-size:13px;
+}
+@media(max-width:700px){
+  iframe{height:240px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:14px;padding:10px}
+  .cardTitle{font-size:13px}
 }
 </style>
 </head>
-
 <body>
 
 <header>
-  <div class="logo"><span>▶</span> MyTube</div>
-  <div class="searchBox">
-    <input id="searchInput" placeholder="検索">
-    <button onclick="searchVideos()">検索</button>
+  <div class="topbar">
+    <div class="logo" onclick="showHome()">Mytube</div>
+    <div class="searchBox">
+      <input id="searchInput" placeholder="検索">
+      <button onclick="searchVideos()">検索</button>
+    </div>
   </div>
+  <button class="recommendBtn" onclick="loadRecommended()">おすすめを更新</button>
 </header>
 
-<div class="layout">
-  <nav class="sidebar">
-    <button onclick="showHome()">ホーム</button>
-    <button onclick="showShorts()">Shorts</button>
-    <button onclick="showHistory()">検索履歴</button>
-    <button onclick="clearHistory()">履歴削除</button>
-  </nav>
+<section id="playerArea" class="playerArea">
+  <div id="playerBox"></div>
+  <div id="nowTitle"></div>
+</section>
 
-  <main class="main">
-    <section id="playerArea" class="playerArea">
-      <div id="playerBox"></div>
-      <div id="nowTitle"></div>
-    </section>
+<h2 id="sectionTitle" class="sectionTitle">おすすめ</h2>
+<section id="videoGrid" class="grid"></section>
+<section id="historyBox" class="historyBox"></section>
+<section id="shortsView" class="shortsView"></section>
 
-    <h2 id="sectionTitle" class="sectionTitle">おすすめ動画</h2>
-    <section id="videoGrid" class="videoGrid"></section>
-
-    <section id="historyBox" class="historyBox"></section>
-
-    <section id="shortsView" class="shortsView"></section>
-  </main>
-</div>
+<nav class="bottomNav">
+  <button onclick="showHome()">ホーム</button>
+  <button onclick="showShorts()">Shorts</button>
+  <button onclick="showHistory()">履歴</button>
+</nav>
 
 <script>
 const API_KEY = "AIzaSyBf5AkiXVgmQQwiP9HlfG3MzvUgIlR2vYI";
@@ -222,42 +210,44 @@ const API_KEY = "AIzaSyBf5AkiXVgmQQwiP9HlfG3MzvUgIlR2vYI";
 let videos = [];
 let shorts = [];
 
-window.onload = () => {
-  loadRecommended();
-};
+window.onload = () => loadRecommended();
 
-function getHistory(){
-  return JSON.parse(localStorage.getItem("searchHistory") || "[]");
+function setCookie(name,value,days=30){
+  const d = new Date();
+  d.setTime(d.getTime() + days*24*60*60*1000);
+  document.cookie = name + "=" + encodeURIComponent(JSON.stringify(value)) + ";expires=" + d.toUTCString() + ";path=/";
+}
+
+function getCookie(name){
+  const target = name + "=";
+  const arr = document.cookie.split(";");
+  for(let c of arr){
+    c = c.trim();
+    if(c.indexOf(target) === 0){
+      try{return JSON.parse(decodeURIComponent(c.substring(target.length)))}
+      catch(e){return []}
+    }
+  }
+  return [];
 }
 
 function saveSearch(word){
-  let history = getHistory();
-  history = history.filter(x => x !== word);
-  history.unshift(word);
-  history = history.slice(0,10);
-  localStorage.setItem("searchHistory", JSON.stringify(history));
+  let h = getCookie("searchHistory");
+  h = h.filter(x => x !== word);
+  h.unshift(word);
+  setCookie("searchHistory", h.slice(0,10));
 }
 
-function getWatchData(){
-  return JSON.parse(localStorage.getItem("watchData") || "[]");
+function saveWatch(video){
+  let w = getCookie("watchData");
+  w.unshift(video.title + " " + video.channelTitle);
+  setCookie("watchData", w.slice(0,25));
 }
 
-function saveWatch(title){
-  let data = getWatchData();
-  data.unshift(title);
-  data = data.slice(0,20);
-  localStorage.setItem("watchData", JSON.stringify(data));
-}
-
-function makeRecommendWord(){
-  const watched = getWatchData().join(" ");
-  const history = getHistory().join(" ");
-
-  if(watched || history){
-    return watched + " " + history;
-  }
-
-  return "人気 動画 音楽 ゲーム shorts";
+function recommendWord(){
+  const h = getCookie("searchHistory").join(" ");
+  const w = getCookie("watchData").join(" ");
+  return (w + " " + h).trim() || "人気 動画 音楽 ゲーム shorts";
 }
 
 function hideAll(){
@@ -268,29 +258,24 @@ function hideAll(){
 
 function showHome(){
   hideAll();
-  document.getElementById("videoGrid").style.display = "grid";
   document.getElementById("sectionTitle").style.display = "block";
+  document.getElementById("videoGrid").style.display = "grid";
   loadRecommended();
 }
 
 function loadRecommended(){
-  document.getElementById("sectionTitle").textContent = "あなたへのおすすめ";
-  fetchVideos(makeRecommendWord());
+  document.getElementById("sectionTitle").textContent = "おすすめ";
+  fetchVideos(recommendWord());
 }
 
-async function searchVideos(){
+function searchVideos(){
   const q = document.getElementById("searchInput").value.trim();
-  if(!q){
-    alert("検索ワードを入力してね");
-    return;
-  }
-
+  if(!q) return alert("検索ワードを入力してね");
   saveSearch(q);
   hideAll();
-  document.getElementById("videoGrid").style.display = "grid";
   document.getElementById("sectionTitle").style.display = "block";
   document.getElementById("sectionTitle").textContent = "検索結果：" + q;
-
+  document.getElementById("videoGrid").style.display = "grid";
   fetchVideos(q + " shorts");
 }
 
@@ -299,14 +284,8 @@ async function fetchVideos(query){
   grid.innerHTML = "<p>読み込み中...</p>";
 
   const url =
-    "https://www.googleapis.com/youtube/v3/search" +
-    "?part=snippet" +
-    "&type=video" +
-    "&videoEmbeddable=true" +
-    "&safeSearch=moderate" +
-    "&maxResults=30" +
-    "&q=" + encodeURIComponent(query) +
-    "&key=" + API_KEY;
+    "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&safeSearch=moderate&maxResults=30&q="
+    + encodeURIComponent(query) + "&key=" + API_KEY;
 
   try{
     const res = await fetch(url);
@@ -321,86 +300,109 @@ async function fetchVideos(query){
     shorts = [];
     grid.innerHTML = "";
 
-    data.items.forEach(item => {
-      const videoId = item.id.videoId;
-      const title = item.snippet.title;
-      const thumb =
-        item.snippet.thumbnails.high?.url ||
-        item.snippet.thumbnails.medium?.url ||
-        item.snippet.thumbnails.default.url;
+    data.items.forEach(item=>{
+      const v = {
+        videoId:item.id.videoId,
+        title:item.snippet.title,
+        channelTitle:item.snippet.channelTitle,
+        channelId:item.snippet.channelId,
+        thumb:item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url,
+        isShort:item.snippet.title.toLowerCase().includes("shorts") || item.snippet.title.includes("ショート") || item.snippet.title.includes("#shorts")
+      };
 
-      const isShort =
-        title.toLowerCase().includes("shorts") ||
-        title.includes("ショート") ||
-        title.includes("#shorts");
-
-      const video = {videoId,title,thumb,isShort};
-      videos.push(video);
-
-      if(isShort) shorts.push(video);
+      videos.push(v);
+      if(v.isShort) shorts.push(v);
 
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <img src="${thumb}">
-        <div class="cardTitle">${title}</div>
-        ${isShort ? '<span class="badge">Shorts</span>' : ''}
+        <img src="${v.thumb}">
+        <div class="cardTitle">${v.title}</div>
+        <div class="channelName">${v.channelTitle}</div>
+        ${v.isShort ? '<span class="badge">Shorts</span>' : ''}
       `;
 
-      card.onclick = () => playVideo(video);
+      card.onclick = () => playVideo(v);
+      card.querySelector(".channelName").onclick = e => openChannel(e,v.channelTitle,v.channelId);
 
       grid.appendChild(card);
     });
 
-    if(shorts.length === 0){
-      shorts = videos;
-    }
+    if(shorts.length === 0) shorts = videos;
 
   }catch(e){
     grid.innerHTML = "<p>読み込みに失敗しました</p>";
   }
 }
 
-function playVideo(video){
-  saveWatch(video.title);
-
+function playVideo(v){
+  saveWatch(v);
   document.getElementById("playerArea").classList.add("active");
   document.getElementById("playerBox").innerHTML = `
     <iframe
-      src="https://www.youtube.com/embed/${video.videoId}?rel=0&autoplay=1&playsinline=1"
-      title="YouTube video player"
+      src="https://www.youtube.com/embed/${v.videoId}?rel=0&autoplay=1&playsinline=1"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen>
     </iframe>
   `;
-
-  document.getElementById("nowTitle").textContent = video.title;
-
+  document.getElementById("nowTitle").textContent = v.title;
   window.scrollTo({top:0,behavior:"smooth"});
+}
 
-  setTimeout(() => {
-    loadRecommended();
-  }, 1500);
+async function openChannel(e,name,id){
+  e.stopPropagation();
+  hideAll();
+  document.getElementById("sectionTitle").style.display = "block";
+  document.getElementById("sectionTitle").textContent = name;
+  document.getElementById("videoGrid").style.display = "grid";
+  fetchVideosFromChannel(id);
+}
+
+async function fetchVideosFromChannel(id){
+  const grid = document.getElementById("videoGrid");
+  grid.innerHTML = "<p>読み込み中...</p>";
+
+  const url =
+    "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=30&channelId="
+    + id + "&key=" + API_KEY;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  grid.innerHTML = "";
+
+  data.items.forEach(item=>{
+    const v = {
+      videoId:item.id.videoId,
+      title:item.snippet.title,
+      channelTitle:item.snippet.channelTitle,
+      channelId:item.snippet.channelId,
+      thumb:item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url,
+      isShort:false
+    };
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<img src="${v.thumb}"><div class="cardTitle">${v.title}</div><div class="channelName">${v.channelTitle}</div>`;
+    card.onclick = () => playVideo(v);
+    grid.appendChild(card);
+  });
 }
 
 function showHistory(){
   hideAll();
   document.getElementById("sectionTitle").style.display = "none";
-
   const box = document.getElementById("historyBox");
   box.classList.add("active");
 
-  const history = getHistory();
-
-  if(history.length === 0){
-    box.innerHTML = "<h2>検索履歴はまだありません</h2>";
+  const h = getCookie("searchHistory");
+  if(h.length === 0){
+    box.innerHTML = "<h2>検索履歴なし</h2>";
     return;
   }
 
   box.innerHTML = "<h2>検索履歴</h2>";
-
-  history.forEach(word => {
+  h.forEach(word=>{
     const div = document.createElement("div");
     div.className = "historyItem";
     div.textContent = word;
@@ -412,48 +414,38 @@ function showHistory(){
   });
 }
 
-function clearHistory(){
-  localStorage.removeItem("searchHistory");
-  localStorage.removeItem("watchData");
-  alert("履歴を削除しました");
-  showHome();
-}
-
 function showShorts(){
   hideAll();
   document.getElementById("sectionTitle").style.display = "none";
 
-  const shortsView = document.getElementById("shortsView");
-  shortsView.classList.add("active");
-  shortsView.innerHTML = "";
+  const view = document.getElementById("shortsView");
+  view.classList.add("active");
+  view.innerHTML = "";
 
   if(shorts.length === 0){
-    fetchVideos("shorts 人気").then(() => showShorts());
+    fetchVideos("shorts 人気").then(()=>showShorts());
     return;
   }
 
-  shorts.forEach(video => {
+  shorts.forEach(v=>{
     const item = document.createElement("div");
     item.className = "shortItem";
-
     item.innerHTML = `
       <div class="shortBox">
         <iframe
-          src="https://www.youtube.com/embed/${video.videoId}?rel=0&playsinline=1"
-          title="YouTube Shorts player"
+          src="https://www.youtube.com/embed/${v.videoId}?rel=0&playsinline=1"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen>
         </iframe>
       </div>
     `;
-
-    shortsView.appendChild(item);
+    view.appendChild(item);
   });
 }
 
-document.getElementById("searchInput").addEventListener("keydown", e => {
-  if(e.key === "Enter") searchVideos();
+document.getElementById("searchInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter") searchVideos();
 });
 </script>
 
